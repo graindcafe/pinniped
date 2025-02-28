@@ -132,11 +132,15 @@ func NewHandler(
 }
 
 func authcode(r *http.Request) string {
+	if r.Method == http.MethodPost {
+		return r.PostFormValue("code")
+	}
+
 	return r.FormValue("code")
 }
 
 func validateRequest(r *http.Request, stateDecoder, cookieDecoder oidc.Decoder, auditLogger plog.AuditLogger) (*oidc.UpstreamStateParamData, error) {
-	if r.Method != http.MethodGet {
+	if r.Method != http.MethodGet and r.Method != http.MethodPost {
 		return nil, httperr.Newf(http.StatusMethodNotAllowed, "%s (try GET)", r.Method)
 	}
 

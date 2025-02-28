@@ -368,7 +368,11 @@ func readCSRFCookie(r *http.Request, cookieDecoder Decoder) (csrftoken.CSRFToken
 }
 
 func readStateParam(r *http.Request, stateDecoder Decoder) (string, *UpstreamStateParamData, error) {
-	encodedState := r.FormValue("state")
+	if r.Method == http.MethodPost {
+		encodedState := r.PostFormValue("state")
+	} else {
+		encodedState := r.FormValue("state")
+	}
 
 	if encodedState == "" {
 		return "", nil, httperr.New(http.StatusBadRequest, "state param not found")
@@ -377,7 +381,7 @@ func readStateParam(r *http.Request, stateDecoder Decoder) (string, *UpstreamSta
 	var state UpstreamStateParamData
 	if err := stateDecoder.Decode(
 		UpstreamStateParamEncodingName,
-		r.FormValue("state"),
+		encodedState,
 		&state,
 	); err != nil {
 		return "", nil, httperr.New(http.StatusBadRequest, "error reading state")
